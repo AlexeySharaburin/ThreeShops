@@ -1,26 +1,29 @@
-import java.util.concurrent.*;
 import java.util.concurrent.atomic.LongAdder;
 
 public class Main {
 
-    public static void main(String[] args) throws InterruptedException, ExecutionException {
+
+    public static void main(String[] args) throws InterruptedException {
 
         LongAdder summaDay = new LongAdder();
-        ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-        Callable<Integer> shop1 = new ShopCallable("1");
-        Callable<Integer> shop2 = new ShopCallable("2");
-        Callable<Integer> shop3 = new ShopCallable("3");
+        Shop shop1 = new Shop(summaDay);
+        Shop shop2 = new Shop(summaDay);
+        Shop shop3 = new Shop(summaDay);
 
-        final Future<Integer> summa1 = executorService.submit(shop1);
-        summaDay.add(summa1.get());
-        final Future<Integer> summa2 = executorService.submit(shop2);
-        summaDay.add(summa2.get());
-        final Future<Integer> summa3 = executorService.submit(shop3);
-        summaDay.add(summa3.get());
+        Thread thread1 = new Thread(null, shop1::calculate, "1");
+        Thread thread2 = new Thread(null, shop2::calculate, "2");
+        Thread thread3 = new Thread(null, shop3::calculate, "3");
+
+        thread1.start();
+        thread2.start();
+        thread3.start();
+
+        thread1.join();
+        thread2.join();
+        thread3.join();
 
         System.out.println("Итоговая сумма, руб.: " + summaDay.sum());
 
-        executorService.shutdown();
     }
 }
